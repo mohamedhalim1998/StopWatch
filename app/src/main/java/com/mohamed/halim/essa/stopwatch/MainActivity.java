@@ -1,5 +1,6 @@
 package com.mohamed.halim.essa.stopwatch;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.os.Bundle;
@@ -19,6 +20,7 @@ public class MainActivity extends AppCompatActivity {
 
     Chronometer timer;
 
+    Bundle instanceState;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -32,8 +34,7 @@ public class MainActivity extends AppCompatActivity {
         start.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                timer.setBase(SystemClock.elapsedRealtime() - timePaused);
-                timer.start();
+                startTimer();
             }
 
         });
@@ -53,6 +54,42 @@ public class MainActivity extends AppCompatActivity {
                 timer.stop();
             }
         });
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        if(instanceState != null) {
+            onRestoreInstanceState(instanceState);
+            startTimer();
+        }
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        timePaused = SystemClock.elapsedRealtime() - timer.getBase();
+        instanceState = new Bundle();
+        onSaveInstanceState(instanceState);
+        timer.stop();
+    }
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putLong("timePaused",timePaused);
+    }
+
+    @Override
+    protected void onRestoreInstanceState(@NonNull Bundle savedInstanceState) {
+        super.onRestoreInstanceState(savedInstanceState);
+        timePaused = savedInstanceState.getLong("timePaused");
+        startTimer();
+    }
+
+    private void startTimer() {
+        timer.setBase(SystemClock.elapsedRealtime() - timePaused);
+        timer.start();
     }
 
 }
